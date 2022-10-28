@@ -27,13 +27,13 @@ class StartingWindow(QMainWindow):
         try:
             with open(self.fileNameInput.text(), 'r') as loadfile:
                 model = json.load(loadfile)
-            self.mainApp = MainApp(self, model)
+            self.mainApp = MainWindow(self, model)
             self.openApp()
         except FileNotFoundError:
             return
 
     def openEmptyFile(self):
-        self.mainApp = MainApp(self)
+        self.mainApp = MainWindow(self)
         self.openApp()
 
     def chooseFile(self):
