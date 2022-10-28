@@ -14,6 +14,8 @@ import sqlite3
 
 from secondary import Point, Model
 
+from exceptions import *
+
 
 class MainWindow(QMainWindow):
     def __init__(self, starter=None, model=Model()):
@@ -77,9 +79,18 @@ class MainWindow(QMainWindow):
 
     def add_point_to_list(self):
         if self.pointInput.text() != '':
+            literal = self.pointInput.text().split()[0]
             try:
-                self.model.points[self.pointInput.text().split()[0]] = self.pointInput.text().split()[1]
-            except IndexError:
+                if len(self.pointInput.text().split()) != 2:
+                    raise InputSyntaxException
+                if len(self.pointInput.text().split()[1].split(',')) != 3:
+                    raise InputSyntaxException
+                if self.pointInput.text().split()[0] not in self.model.points.keys():
+                    self.model.points[literal] = self.pointInput.text().split()[1]
+                else:
+                    self.model.points[literal + f'{list(self.model.points.keys()).count(literal)}'] \
+                        = self.pointInput.text().split()[1]
+            except InputSyntaxException:
                 self.pointInput.setText('ОШИБКА ВВОДА')
                 return
             literal = list(self.model.points.keys())[-1]
@@ -115,8 +126,8 @@ class MainWindow(QMainWindow):
                 for i in self.model.points:
                     self.pointOne.addItem(i[0])
                     self.pointTwo.addItem(i[0])
-        except KeyError as er:
-            print(er)
+        except Exception:
+            raise PointExistingException
 
         self.redraw()
 
@@ -134,12 +145,13 @@ class MainWindow(QMainWindow):
             del self.model.connections[self.model.connections.index(
                 [min(self.connectionsText[self.pointOne], self.connectionsText[self.pointTwo]),
                        max(self.connectionsText[self.pointOne], self.connectionsText[self.pointTwo])])]
-        except ValueError as er:
-            print(er)
+        except Exception:
+            raise PointExistingException
         self.redraw()
 
     def load_figure(self):
-        self.figureSelection = FigureSelectionWindow()
+        pass
+        # self.figureSelection = FigureSelectionWindow()
 
     def draw_line(self, p1, p2, line='common', color='#bF311A'):
         drawer = ImageDraw.Draw(self.field)
@@ -207,9 +219,8 @@ class MainWindow(QMainWindow):
             return
         try:
             point = self.model.points[self.pointPressed.text().split()[0]]
-        except KeyError:
-            print("keyError passed")
-            return
+        except Exception:
+            raise PointExistingException
         point.coordinates = [self.changeX.value(), self.changeY.value(), self.changeZ.value()]
         crds = point.crds()
         self.pointList.takeItem(self.rowPressed)
@@ -247,8 +258,8 @@ class MainWindow(QMainWindow):
                 self.newPoints[i] = self.rotate(self.model.points[i], self.xRotate.value(), self.zRotate.value(),
                                                 self.yRotate.value())
                 self.newPoints[i].set_color(self.model.points[i].color)
-        except KeyError:
-            pass
+        except Exception:
+            raise PointExistingException
         for point in self.systemPoints:
             self.newSystem.append(self.rotate(point, self.xRotate.value(), self.zRotate.value(), self.yRotate.value()))
         if self.freezeSystem.isChecked():
