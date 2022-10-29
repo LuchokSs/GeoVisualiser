@@ -1,6 +1,19 @@
 from PyQt5.QtWidgets import QWidget, QLabel
 from PyQt5 import uic
 
+from PyQt5.QtGui import QPixmap
+from PIL.ImageQt import ImageQt
+from PIL import Image
+
+
+def set_img(self, img):
+    if str(type(img)) == "<class 'str'>":
+        img = Image.open(img)
+        img = img.resize((250, 250))
+    self.pic = ImageQt(img)
+    self.pixmap = QPixmap.fromImage(self.pic)
+    self.picOutput.setPixmap(self.pixmap)
+
 
 class Plane:
     def __init__(self, point1, point2, point3):
@@ -31,5 +44,6 @@ class Model:
 
 class FigureView(QWidget):
     def __init__(self, *args):
-        super().__init__(*args)
+        super().__init__(args[0])
         uic.loadUi('FigureViewWidget.ui', self)
+        set_img(self, args[1])

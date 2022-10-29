@@ -1,9 +1,7 @@
+import sqlite3
+
 from PyQt5 import uic
 from PyQt5.QtWidgets import QMainWindow, QFileDialog
-
-from PyQt5.QtGui import QPixmap
-from PIL import Image, ImageDraw
-from PIL.ImageQt import ImageQt
 
 from exceptions import DataBaseException
 
@@ -16,14 +14,19 @@ class FigureSelectionWindow(QMainWindow):
         uic.loadUi('FigureSelectionWindow.ui', self)
 
         self.starter = starter
-        self.db = dataBase
-
         try:
-            if self.db is None:
+            if dataBase is None:
                 raise DataBaseException
-            with self.db.cursor() as cursor:
-                self.figureNames = cursor.execute("""SELECT names FROM figures""").fetchall()
+            self.db = sqlite3.connect(dataBase).cursor()
+            self.figureNames = list(map(lambda x: x[0],
+                                        self.db.execute("""SELECT figureName FROM figure""").fetchall()))
         except DataBaseException as er:
             print(er)
 
-        self.figuresLayout.addItem(FigureView(self))
+        self.showFigures()
+
+    def showFigures(self):
+        for figure in self.figureNames:
+            path = self.db.execute(f"""SELECT figureImagePath FROM figure
+                                           WHERE figureName='{figure}'""").fetchall()[0][0]
+            self.figuresLayout.addWidget(FigureView(self, path))

@@ -267,7 +267,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="SaveFigureButton">
+       <widget class="QPushButton" name="saveFigureButton">
         <property name="minimumSize">
          <size>
           <width>150</width>

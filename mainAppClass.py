@@ -2,9 +2,7 @@ from PyQt5 import uic
 from PyQt5.QtWidgets import QMainWindow, QFileDialog
 from numpy import matmul as mult, array
 
-from PyQt5.QtGui import QPixmap
 from PIL import Image, ImageDraw
-from PIL.ImageQt import ImageQt
 
 from math import cos, sin, pi
 
@@ -12,7 +10,7 @@ import json_tricks as json
 
 import sqlite3
 
-from secondary import Point, Model
+from secondary import Point, Model, set_img
 
 from figureSelectionWindowClass import FigureSelectionWindow
 
@@ -26,7 +24,7 @@ class MainWindow(QMainWindow):
 
         self.starter = starter
 
-        self.figuresDataBase = 'figures_db.sqlite'
+        self.figuresDataBase = "figuresDataBase.db"
 
         self.model = model
         self.connectionsText = {self.pointOne: '',
@@ -60,7 +58,7 @@ class MainWindow(QMainWindow):
         self.lastAxis = 'x'
         self.redraw()
 
-        self.set_img(self.field)
+        set_img(self, self.field)
 
         self.addButton.clicked.connect(self.add_point_to_list)
         self.connectPoints.clicked.connect(self.add_connected_points)
@@ -70,6 +68,7 @@ class MainWindow(QMainWindow):
         self.exitButton.clicked.connect(self.openStartWindow)
         self.saveFile.clicked.connect(self.save)
         self.loadFigureButton.clicked.connect(self.load_figure)
+        self.saveFigureButton.clicked.connect(self.save_figure)
 
         self.pointList.itemPressed.connect(self.item_pressed)
 
@@ -153,7 +152,7 @@ class MainWindow(QMainWindow):
         self.redraw()
 
     def load_figure(self):
-        self.figureSelection = FigureSelectionWindow(None, starter=self)
+        self.figureSelection = FigureSelectionWindow(self.figuresDataBase, starter=self)
         self.figureSelection.show()
 
     def draw_line(self, p1, p2, line='common', color='#bF311A'):
@@ -173,7 +172,7 @@ class MainWindow(QMainWindow):
                               350 - (point1[1] - int(0.5 * point1[2])) - (add2[1] - int(0.5 * add2[2])))),
                             color, width=1)
                 point1 = [point1[0] + add[0], point1[1] + add[1], point1[2] + add[2]]
-        self.set_img(self.field)
+        set_img(self, self.field)
 
     def current_text_changed(self, text):
         self.connectionsText[self.sender()] = text
@@ -277,12 +276,7 @@ class MainWindow(QMainWindow):
                 ((point[0] - int(0.5 * point[2]) - 3 + 350, 350 - (point[1] - int(0.5 * point[2])) - 3),
                  (point[0] - int(0.5 * point[2]) + 3 + 350, 350 - (point[1] - int(0.5 * point[2])) + 3)),
                 color)
-        self.set_img(self.field)
-
-    def set_img(self, img):
-        self.pic = ImageQt(img)
-        self.pixmap = QPixmap.fromImage(self.pic)
-        self.picOutput.setPixmap(self.pixmap)
+        set_img(self, self.field)
 
     def draw_system(self):
         drawer = ImageDraw.Draw(self.field)
@@ -328,16 +322,41 @@ class MainWindow(QMainWindow):
 
     def save(self):
         path = QFileDialog.getSaveFileName(self, 'Сохранить как...', '', 'График (*.json);; Картинка (*.png)')
-        if path[1] == "График (*.json)":
-            with open(path[0], 'w') as outfile:
-                json.dump(self.model, outfile)
-            return
-        if path[1] == "Картинка (*.png)":
-            self.field.save(path[0])
+        try:
+            if path[1] == "График (*.json)":
+                with open(path[0], 'w') as outfile:
+                    json.dump(self.model, outfile)
+                return
+            if path[1] == "Картинка (*.png)":
+                self.field.save(path[0])
+        except ValueError as er:
+            print(er)
 
     def save_figure(self):
+        path = QFileDialog.getSaveFileName(self, 'Сохранить как...', 'figureImage/', 'Картинка (*.png)')
+        try:
+            self.field.save(path[0])
+        except ValueError:
+            return
         db = sqlite3.connect(self.figuresDataBase)
         cursor = db.cursor()
-        for pointName in self.points.keys():
-            cursor.execute("""""")
-            pass
+        figureName = (path[0].split('/')[-1]).split('.')[0]
+        cursor.execute(f"""INSERT INTO figure(figureName, figureImagePath) VALUES('{figureName}',
+                      '{'./' + '/'.join((path[0].split('/'))[len(path[0].split('/')) - 2:len(path[0].split('/'))])}')""")
+        db.commit()
+        figureID = cursor.execute(f"""SELECT figureID FROM figure
+                                      WHERE figureName='{figureName}'""").fetchall()[0][0]
+        for pointName in self.model.points.keys():
+            point = self.model.points[pointName].crds()
+            cursor.execute(f"""INSERT INTO points('figureID', 'pointName', 'x-crd', 'y-crd', 'z-crd') VALUES(
+                                    '{figureID}', '{pointName}', '{point[0]}', '{point[1]}', '{point[2]}')""")
+            db.commit()
+        for connection in self.model.connections:
+            pointOneID = cursor.execute(f"""SELECT pointID FROM points
+                                            WHERE pointName='{connection[0]}'""").fetchall()[0][0]
+            pointTwoID = cursor.execute(f"""SELECT pointID FROM points
+                                            WHERE pointName='{connection[1]}'""").fetchall()[0][0]
+            cursor.execute(f"""INSERT INTO connections('figureID', 'pointOneID', 'pointTwoID') VALUES(
+                                    '{figureID}', '{pointOneID}', '{pointTwoID}')""")
+            db.commit()
+        db.close()
