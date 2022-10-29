@@ -27,16 +27,7 @@ class MainWindow(QMainWindow):
         self.figuresDataBase = "figuresDataBase.db"
 
         self.model = model
-        self.connectionsText = {self.pointOne: '',
-                                self.pointTwo: ''}
-        for literal in self.model.points.keys():
-            self.pointList.addItem(literal + ' ' + ','.join(list(map(str, self.model.points[literal].coordinates))))
-            self.pointList.sortItems()
-            self.pointOne.addItem(literal)
-            self.pointTwo.addItem(literal)
-            if self.connectionsText[self.pointOne] == '':
-                self.connectionsText = {self.pointOne: literal,
-                                        self.pointTwo: literal}
+        self.update_model()
 
         self.field = Image.new('RGB', (700, 700), (255, 255, 255))
 
@@ -78,6 +69,18 @@ class MainWindow(QMainWindow):
 
         self.pointOne.currentTextChanged.connect(self.current_text_changed)
         self.pointTwo.currentTextChanged.connect(self.current_text_changed)
+
+    def update_model(self):
+        self.connectionsText = {self.pointOne: '',
+                                self.pointTwo: ''}
+        for literal in self.model.points.keys():
+            self.pointList.addItem(literal + ' ' + ','.join(list(map(str, self.model.points[literal].coordinates))))
+            self.pointList.sortItems()
+            self.pointOne.addItem(literal)
+            self.pointTwo.addItem(literal)
+            if self.connectionsText[self.pointOne] == '':
+                self.connectionsText = {self.pointOne: literal,
+                                        self.pointTwo: literal}
 
     def add_point_to_list(self):
         if self.pointInput.text() != '':
@@ -333,7 +336,7 @@ class MainWindow(QMainWindow):
             print(er)
 
     def save_figure(self):
-        path = QFileDialog.getSaveFileName(self, 'Сохранить как...', 'figureImage/', 'Картинка (*.png)')
+        path = QFileDialog.getSaveFileName(self, 'Сохранить как...', directory='.//figureImages', filter='Картинка (*.png)')
         try:
             self.field.save(path[0])
         except ValueError:
