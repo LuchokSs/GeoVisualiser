@@ -4,3 +4,7 @@ class PointExistingException(Exception):
 
 class InputSyntaxException(Exception):
     pass
+
+
+class DataBaseException(Exception):
+    pass

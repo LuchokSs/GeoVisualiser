@@ -14,6 +14,8 @@ import sqlite3
 
 from secondary import Point, Model
 
+from figureSelectionWindowClass import FigureSelectionWindow
+
 from exceptions import *
 
 
@@ -67,6 +69,7 @@ class MainWindow(QMainWindow):
         self.endChanging.clicked.connect(self.change_crd_of_point)
         self.exitButton.clicked.connect(self.openStartWindow)
         self.saveFile.clicked.connect(self.save)
+        self.loadFigureButton.clicked.connect(self.load_figure)
 
         self.pointList.itemPressed.connect(self.item_pressed)
 
@@ -150,8 +153,8 @@ class MainWindow(QMainWindow):
         self.redraw()
 
     def load_figure(self):
-        pass
-        # self.figureSelection = FigureSelectionWindow()
+        self.figureSelection = FigureSelectionWindow(None, starter=self)
+        self.figureSelection.show()
 
     def draw_line(self, p1, p2, line='common', color='#bF311A'):
         drawer = ImageDraw.Draw(self.field)

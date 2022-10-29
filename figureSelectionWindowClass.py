@@ -5,6 +5,8 @@ from PyQt5.QtGui import QPixmap
 from PIL import Image, ImageDraw
 from PIL.ImageQt import ImageQt
 
+from exceptions import DataBaseException
+
 
 class FigureSelectionWindow(QMainWindow):
     def __init__(self, dataBase, starter=None):
@@ -14,5 +16,10 @@ class FigureSelectionWindow(QMainWindow):
         self.starter = starter
         self.db = dataBase
 
-        with self.db.cursor() as cursor:
-            self.figureNames = cursor.execute("""SELECT names FROM figures""").fetchall()
+        try:
+            if self.db is None:
+                raise DataBaseException
+            with self.db.cursor() as cursor:
+                self.figureNames = cursor.execute("""SELECT names FROM figures""").fetchall()
+        except DataBaseException as er:
+            print(er)
