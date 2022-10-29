@@ -1,3 +1,7 @@
+from PyQt5.QtWidgets import QWidget, QLabel
+from PyQt5 import uic
+
+
 class Plane:
     def __init__(self, point1, point2, point3):
         self.corners = [point1, point2, point3]
@@ -23,3 +27,9 @@ class Model:
     def __init__(self):
         self.points = {}
         self.connections = []
+
+
+class FigureView(QWidget):
+    def __init__(self, *args):
+        super().__init__(*args)
+        uic.loadUi('FigureViewWidget.ui', self)

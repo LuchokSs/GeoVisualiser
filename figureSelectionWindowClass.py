@@ -7,6 +7,8 @@ from PIL.ImageQt import ImageQt
 
 from exceptions import DataBaseException
 
+from secondary import FigureView
+
 
 class FigureSelectionWindow(QMainWindow):
     def __init__(self, dataBase, starter=None):
@@ -23,3 +25,5 @@ class FigureSelectionWindow(QMainWindow):
                 self.figureNames = cursor.execute("""SELECT names FROM figures""").fetchall()
         except DataBaseException as er:
             print(er)
+
+        self.figuresLayout.addItem(FigureView(self))

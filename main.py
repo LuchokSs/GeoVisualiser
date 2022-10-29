@@ -5,7 +5,7 @@ import sys
 
 import json_tricks as json
 
-from mainApp import MainWindow
+from mainAppClass import MainWindow
 
 
 class StartingWindow(QMainWindow):
@@ -15,28 +15,28 @@ class StartingWindow(QMainWindow):
 
         self.mainApp = MainWindow(self)
 
-        self.begButton.clicked.connect(self.openChoosenFile)
-        self.createEmpty.clicked.connect(self.openEmptyFile)
-        self.choosePath.clicked.connect(self.chooseFile)
+        self.begButton.clicked.connect(self.open_choosen_file)
+        self.createEmpty.clicked.connect(self.open_empty_file)
+        self.choosePath.clicked.connect(self.choose_file)
 
-    def openApp(self):
+    def open_app(self):
         self.mainApp.show()
         self.hide()
 
-    def openChoosenFile(self):
+    def open_choosen_file(self):
         try:
             with open(self.fileNameInput.text(), 'r') as loadfile:
                 model = json.load(loadfile)
             self.mainApp = MainWindow(self, model)
-            self.openApp()
+            self.open_app()
         except FileNotFoundError:
             return
 
-    def openEmptyFile(self):
+    def open_empty_file(self):
         self.mainApp = MainWindow(self)
-        self.openApp()
+        self.open_app()
 
-    def chooseFile(self):
+    def choose_file(self):
         self.path = QFileDialog.getOpenFileName(self, "Open file", '', 'Рисунок (*.json);; Все файлы (*)')[0]
         self.fileNameInput.setText(self.path)
 
