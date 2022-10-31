@@ -1,5 +1,5 @@
 from PyQt5 import uic
-from PyQt5.QtWidgets import QMainWindow, QFileDialog
+from PyQt5.QtWidgets import QMainWindow, QFileDialog, QInputDialog
 from numpy import matmul as mult, array
 
 from PIL import Image, ImageDraw
@@ -147,11 +147,14 @@ class MainWindow(QMainWindow):
 
     def del_connected_points(self):
         try:
-            del self.model.connections[self.model.connections.index(
-                [min(self.connectionsText[self.pointOne], self.connectionsText[self.pointTwo]),
-                       max(self.connectionsText[self.pointOne], self.connectionsText[self.pointTwo])])]
-        except Exception:
-            raise PointExistingException
+            try:
+                del self.model.connections[self.model.connections.index(
+                    [min(self.connectionsText[self.pointOne], self.connectionsText[self.pointTwo]),
+                           max(self.connectionsText[self.pointOne], self.connectionsText[self.pointTwo])])]
+            except KeyError:
+                raise PointExistingException
+        except PointExistingException:
+            return
         self.redraw()
 
     def load_figure(self):
@@ -336,19 +339,20 @@ class MainWindow(QMainWindow):
             print(er)
 
     def save_figure(self):
-        path = QFileDialog.getSaveFileName(self, 'Сохранить как...', directory='.//figureImages', filter='Картинка (*.png)')
+        name, ok_pressed = QInputDialog.getText(self, "Введите название файла", "ВВедите название файла...")
+        if not ok_pressed:
+            return
+        path = './figureImages/' + name + '.png'
         try:
-            self.field.save(path[0])
+            self.field.save(path)
         except ValueError:
             return
         db = sqlite3.connect(self.figuresDataBase)
         cursor = db.cursor()
-        figureName = (path[0].split('/')[-1]).split('.')[0]
-        cursor.execute(f"""INSERT INTO figure(figureName, figureImagePath) VALUES('{figureName}',
-                      '{'./' + '/'.join((path[0].split('/'))[len(path[0].split('/')) - 2:len(path[0].split('/'))])}')""")
+        cursor.execute(f"""INSERT INTO figure(figureName, figureImagePath) VALUES('{name}', '{path}')""")
         db.commit()
         figureID = cursor.execute(f"""SELECT figureID FROM figure
-                                      WHERE figureName='{figureName}'""").fetchall()[0][0]
+                                      WHERE figureName='{name}'""").fetchall()[0][0]
         for pointName in self.model.points.keys():
             point = self.model.points[pointName].crds()
             cursor.execute(f"""INSERT INTO points('figureID', 'pointName', 'xcrd', 'ycrd', 'zcrd') VALUES(
