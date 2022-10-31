@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QMainWindow, QFileDialog
 
 from exceptions import DataBaseException
 
-from secondary import FigureView
+from secondary import FigureView, Model, Point
 
 
 class FigureSelectionWindow(QMainWindow):
@@ -23,10 +23,48 @@ class FigureSelectionWindow(QMainWindow):
         except DataBaseException as er:
             print(er)
 
-        self.showFigures()
+        self.show_figures()
 
-    def showFigures(self):
+    def show_figures(self):
         for figure in self.figureNames:
             path = self.db.execute(f"""SELECT figureImagePath FROM figure
                                            WHERE figureName='{figure}'""").fetchall()[0][0]
-            self.figuresLayout.addWidget(FigureView(self, path))
+            self.figuresLayout.addWidget(FigureView(self, path, figure))
+
+    def update_model(self):
+        senderBtn = self.sender()
+        updatedModel = Model()
+        loaded = self.db.execute(f"""SELECT pointName, xcrd, ycrd, zcrd FROM points
+                                        WHERE figureID=(
+                                            SELECT figureID FROM figure
+                                                WHERE figureName=('{senderBtn.figureName}'))""").fetchall()
+        for i in range(len(loaded)):
+            updatedModel.points[loaded[i][0]] = Point([loaded[i][1], loaded[i][2], loaded[i][3]])
+            if loaded[i][0] not in self.starter.model.points.keys():
+                self.starter.model.points[loaded[i][0]] = Point([loaded[i][1], loaded[i][2], loaded[i][3]])
+            else:
+                self.starter.model.points[loaded[i][0]
+                                          + f'{list(self.starter.model.points.keys()).count(loaded[i][0])}']\
+                    = Point([loaded[i][1], loaded[i][2], loaded[i][3]])
+        pnts = self.db.execute(f"""SELECT pointOneID, pointTwoID FROM connections 
+                                                WHERE figureID=(
+                                                    SELECT figureID FROM figure
+                                                        WHERE figureName=('{senderBtn.figureName}'))""").fetchall()
+        for i in range(len(pnts)):
+            loaded = self.db.execute(f"""SELECT pointName FROM points
+                                            WHERE pointID in ({pnts[i][0]}, {pnts[i][1]})""").fetchall()
+            updatedModel.connections.append([loaded[0][0], loaded[1][0]])
+            self.starter.model.connections.append([loaded[0][0], loaded[1][0]])
+        self.starter.connectionsText = {self.starter.pointOne: '',
+                                        self.starter.pointTwo: ''}
+        for literal in updatedModel.points.keys():
+            self.starter.pointList.addItem(literal +
+                                           ' ' + ','.join(list(map(str, updatedModel.points[literal].coordinates))))
+            self.starter.pointList.sortItems()
+            self.starter.pointOne.addItem(literal)
+            self.starter.pointTwo.addItem(literal)
+            if self.starter.connectionsText[self.starter.pointOne] == '':
+                self.starter.connectionsText = {self.starter.pointOne: literal,
+                                                self.starter.pointTwo: literal}
+        self.starter.redraw()
+        self.destroy()

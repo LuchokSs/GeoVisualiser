@@ -351,7 +351,7 @@ class MainWindow(QMainWindow):
                                       WHERE figureName='{figureName}'""").fetchall()[0][0]
         for pointName in self.model.points.keys():
             point = self.model.points[pointName].crds()
-            cursor.execute(f"""INSERT INTO points('figureID', 'pointName', 'x-crd', 'y-crd', 'z-crd') VALUES(
+            cursor.execute(f"""INSERT INTO points('figureID', 'pointName', 'xcrd', 'ycrd', 'zcrd') VALUES(
                                     '{figureID}', '{pointName}', '{point[0]}', '{point[1]}', '{point[2]}')""")
             db.commit()
         for connection in self.model.connections:

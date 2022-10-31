@@ -163,6 +163,9 @@
        <property name="text">
         <string>OK</string>
        </property>
+       <property name="figureName" stdset="0">
+        <string>None</string>
+       </property>
       </widget>
      </item>
     </layout>

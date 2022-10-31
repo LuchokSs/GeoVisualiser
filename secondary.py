@@ -47,3 +47,5 @@ class FigureView(QWidget):
         super().__init__(args[0])
         uic.loadUi('FigureViewWidget.ui', self)
         set_img(self, args[1])
+        self.OKButton.figureName = args[2]
+        self.OKButton.clicked.connect(args[0].update_model)
