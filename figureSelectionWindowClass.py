@@ -40,12 +40,7 @@ class FigureSelectionWindow(QMainWindow):
                                                 WHERE figureName=('{senderBtn.figureName}'))""").fetchall()
         for i in range(len(loaded)):
             updatedModel.points[loaded[i][0]] = Point([loaded[i][1], loaded[i][2], loaded[i][3]])
-            if loaded[i][0] not in self.starter.model.points.keys():
-                self.starter.model.points[loaded[i][0]] = Point([loaded[i][1], loaded[i][2], loaded[i][3]])
-            else:
-                self.starter.model.points[loaded[i][0]
-                                          + f'{list(self.starter.model.points.keys()).count(loaded[i][0])}']\
-                    = Point([loaded[i][1], loaded[i][2], loaded[i][3]])
+            self.starter.model.points[loaded[i][0]] = Point([loaded[i][1], loaded[i][2], loaded[i][3]])
         pnts = self.db.execute(f"""SELECT pointOneID, pointTwoID FROM connections 
                                                 WHERE figureID=(
                                                     SELECT figureID FROM figure
