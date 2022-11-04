@@ -151,7 +151,7 @@ class MainWindow(QMainWindow):
                 del self.model.connections[self.model.connections.index(
                     [min(self.connectionsText[self.pointOne], self.connectionsText[self.pointTwo]),
                            max(self.connectionsText[self.pointOne], self.connectionsText[self.pointTwo])])]
-            except KeyError:
+            except Exception:
                 raise PointExistingException
         except PointExistingException:
             return

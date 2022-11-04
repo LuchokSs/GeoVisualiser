@@ -45,4 +45,4 @@ if __name__ == '__main__':
     ex = QApplication(sys.argv)
     app = StartingWindow()
     app.show()
-    ex.exit(ex.exec())
+    sys.exit(ex.exec())

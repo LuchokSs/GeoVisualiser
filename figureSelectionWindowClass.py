@@ -1,11 +1,11 @@
 import sqlite3
 
 from PyQt5 import uic
-from PyQt5.QtWidgets import QMainWindow, QFileDialog
+from PyQt5.QtWidgets import QMainWindow, QFileDialog, QDialog
 
 from exceptions import DataBaseException
 
-from secondary import FigureView, Model, Point
+from secondary import FigureView, Model, Point, MovingDialog
 
 
 class FigureSelectionWindow(QMainWindow):
@@ -33,14 +33,25 @@ class FigureSelectionWindow(QMainWindow):
 
     def update_model(self):
         senderBtn = self.sender()
+        dialog = MovingDialog(self)
+        result = dialog.exec_()
+        if result == 1:
+            results = dialog.xValue.value(), dialog.yValue.value(), dialog.yValue.value()
+        elif result == 0:
+            self.destroy()
+            return
         updatedModel = Model()
         loaded = self.db.execute(f"""SELECT pointName, xcrd, ycrd, zcrd FROM points
                                         WHERE figureID=(
                                             SELECT figureID FROM figure
                                                 WHERE figureName=('{senderBtn.figureName}'))""").fetchall()
         for i in range(len(loaded)):
-            updatedModel.points[loaded[i][0]] = Point([loaded[i][1], loaded[i][2], loaded[i][3]])
-            self.starter.model.points[loaded[i][0]] = Point([loaded[i][1], loaded[i][2], loaded[i][3]])
+            updatedModel.points[loaded[i][0]] = Point([loaded[i][1] + results[0],
+                                                       loaded[i][2] + results[1],
+                                                       loaded[i][3] + results[1]])
+            self.starter.model.points[loaded[i][0]] = Point([loaded[i][1] + results[0],
+                                                             loaded[i][2] + results[1],
+                                                             loaded[i][3] + results[1]])
         pnts = self.db.execute(f"""SELECT pointOneID, pointTwoID FROM connections 
                                                 WHERE figureID=(
                                                     SELECT figureID FROM figure

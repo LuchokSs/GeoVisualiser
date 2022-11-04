@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QLabel
+from PyQt5.QtWidgets import QWidget, QLabel, QDialog
 from PyQt5 import uic
 
 from PyQt5.QtGui import QPixmap
@@ -40,6 +40,14 @@ class Model:
     def __init__(self):
         self.points = {}
         self.connections = []
+
+
+class MovingDialog(QDialog):
+    def __init__(self, *args):
+        super().__init__()
+        uic.loadUi('movingDialog.ui', self)
+        self.btnOK.clicked.connect(self.accept)
+        self.btnCancel.clicked.connect(self.reject)
 
 
 class FigureView(QWidget):
