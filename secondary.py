@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QLabel, QDialog
+from PyQt5.QtWidgets import QWidget, QLabel, QDialog, QPushButton
 from PyQt5 import uic
 
 from PyQt5.QtGui import QPixmap
@@ -46,6 +46,28 @@ class MovingDialog(QDialog):
     def __init__(self, *args):
         super().__init__()
         uic.loadUi('movingDialog.ui', self)
+        self.btnOK.clicked.connect(self.accept)
+        self.btnCancel.clicked.connect(self.reject)
+
+
+class ADDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setGeometry(500, 500, 300, 90)
+        self.setWindowTitle('Are you agree?')
+
+        self.label = QLabel(self)
+        self.label.setText('Point will be deleted')
+        self.label.move(80, 10)
+
+        self.btnOK = QPushButton(self)
+        self.btnOK.setText('OK')
+        self.btnOK.setGeometry(40, 30, 100, 50)
+
+        self.btnCancel = QPushButton(self)
+        self.btnCancel.setText('Cancel')
+        self.btnCancel.setGeometry(160, 30, 100, 50)
+
         self.btnOK.clicked.connect(self.accept)
         self.btnCancel.clicked.connect(self.reject)
 

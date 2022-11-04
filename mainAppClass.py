@@ -1,5 +1,5 @@
 from PyQt5 import uic
-from PyQt5.QtWidgets import QMainWindow, QFileDialog, QInputDialog
+from PyQt5.QtWidgets import QMainWindow, QFileDialog, QInputDialog, QDialog
 from numpy import matmul as mult, array
 
 from PIL import Image, ImageDraw
@@ -10,7 +10,7 @@ import json_tricks as json
 
 import sqlite3
 
-from secondary import Point, Model, set_img
+from secondary import Point, Model, set_img, ADDialog
 
 from figureSelectionWindowClass import FigureSelectionWindow
 
@@ -56,7 +56,7 @@ class MainWindow(QMainWindow):
         self.disconnectPoints.clicked.connect(self.del_connected_points)
         self.delButton.clicked.connect(self.del_point_from_list)
         self.endChanging.clicked.connect(self.change_crd_of_point)
-        self.exitButton.clicked.connect(self.openStartWindow)
+        self.exitButton.clicked.connect(self.open_start_window)
         self.saveFile.clicked.connect(self.save)
         self.loadFigureButton.clicked.connect(self.load_figure)
         self.saveFigureButton.clicked.connect(self.save_figure)
@@ -113,8 +113,11 @@ class MainWindow(QMainWindow):
         self.redraw()
 
     def del_point_from_list(self):
-        try:
-            if self.pointPressed != '':
+        if self.pointPressed != '':
+            dialog = ADDialog()
+            if not dialog.exec_():
+                return
+            try:
                 self.pointList.takeItem(self.pointList.row(self.pointPressed))
                 self.model.points.pop(self.pointPressed.text().split()[0])
                 self.pointOne.clear()
@@ -131,26 +134,27 @@ class MainWindow(QMainWindow):
                 for i in self.model.points:
                     self.pointOne.addItem(i[0])
                     self.pointTwo.addItem(i[0])
-        except Exception:
-            raise PointExistingException
+            except KeyError:
+                pass
 
         self.redraw()
 
     def add_connected_points(self):
-        if [min(self.connectionsText[self.pointOne], self.connectionsText[self.pointTwo]),
-                  max(self.connectionsText[self.pointOne],
-                      self.connectionsText[self.pointTwo])] not in self.model.connections:
-            self.model.connections.append(
-                [min(self.connectionsText[self.pointOne], self.connectionsText[self.pointTwo]),
-                       max(self.connectionsText[self.pointOne], self.connectionsText[self.pointTwo])])
-        self.redraw()
+        if self.connectionsText[self.pointOne] != '' and self.connectionsText[self.pointTwo] != '':
+            if [min(self.connectionsText[self.pointOne], self.connectionsText[self.pointTwo]),
+                max(self.connectionsText[self.pointOne],
+                    self.connectionsText[self.pointTwo])] not in self.model.connections:
+                self.model.connections.append(
+                    [min(self.connectionsText[self.pointOne], self.connectionsText[self.pointTwo]),
+                     max(self.connectionsText[self.pointOne], self.connectionsText[self.pointTwo])])
+            self.redraw()
 
     def del_connected_points(self):
         try:
             try:
                 del self.model.connections[self.model.connections.index(
                     [min(self.connectionsText[self.pointOne], self.connectionsText[self.pointTwo]),
-                           max(self.connectionsText[self.pointOne], self.connectionsText[self.pointTwo])])]
+                     max(self.connectionsText[self.pointOne], self.connectionsText[self.pointTwo])])]
             except Exception:
                 raise PointExistingException
         except PointExistingException:
@@ -171,13 +175,16 @@ class MainWindow(QMainWindow):
         elif line == 'splited':
             start = point1
             add = list(map(lambda x: x // 10, self.vector(point1, point2)))
-            add2 = list(map(lambda x: x // 20, self.vector(point1, point2)))
+            i = 0
             while self.vector_lenth(start, point1) < self.vector_lenth(start, point2):
-                drawer.line((self.convert_system(point1),
-                             (point1[0] - int(0.5 * point1[2]) + 350 + (add2[0] - int(0.5 * add2[2])),
-                              350 - (point1[1] - int(0.5 * point1[2])) - (add2[1] - int(0.5 * add2[2])))),
-                            color, width=1)
+                if (i % 2 == 0 and self.vector_lenth(start, point2) - self.vector_lenth(start, point1)
+                        > self.vector_lenth(start, point2) // 10):
+                    drawer.line((self.convert_system(point1),
+                                 (point1[0] - int(0.5 * point1[2]) + 350 + (add[0] - int(0.5 * add[2])),
+                                  350 - (point1[1] - int(0.5 * point1[2])) - (add[1] - int(0.5 * add[2])))),
+                                color, width=1)
                 point1 = [point1[0] + add[0], point1[1] + add[1], point1[2] + add[2]]
+                i += 1
         set_img(self, self.field)
 
     def current_text_changed(self, text):
@@ -196,8 +203,14 @@ class MainWindow(QMainWindow):
         self.changeZ.setValue(point.crds()[2])
 
         def func(a1, a2, a3, p1, p2, p3):
-            self.draw_line(Point([a1, a2, a3]),
-                           Point([p1, p2, p3]), line='splited', color='#50AAAA')
+            self.draw_line(self.rotate(Point([a1, a2, a3]),
+                                       self.xRotate.value(),
+                                       self.zRotate.value(),
+                                       self.yRotate.value()),
+                           self.rotate(Point([p1, p2, p3]),
+                                       self.xRotate.value(),
+                                       self.zRotate.value(),
+                                       self.yRotate.value()), line='splited', color='#50AAAA')
 
         if point[0] and point[1] and point[2]:
             func(point[0], point[1], point[2], point[0], point[1], 0)
@@ -244,10 +257,10 @@ class MainWindow(QMainWindow):
     def rotate(self, point, x, y, z):
         angleX, angleY, angleZ = (x / 180 * pi), (y / 180 * pi), (z / 180 * pi)
         newPoint = self.multiply([[1, 0, 0],
-                                  [0, cos(angleX), -sin(angleX)],
-                                  [0, sin(angleX), cos(angleX)]],
-                                 [[cos(angleZ), sin(angleZ), 0],
-                                  [-sin(angleZ), cos(angleZ), 0],
+                                  [0, cos(angleX), sin(angleX)],
+                                  [0, -sin(angleX), cos(angleX)]],
+                                 [[cos(angleZ), -sin(angleZ), 0],
+                                  [sin(angleZ), cos(angleZ), 0],
                                   [0, 0, 1]])
         newPoint = self.multiply(newPoint,
                                  [[cos(angleY), 0, sin(angleY)],
@@ -296,9 +309,9 @@ class MainWindow(QMainWindow):
         drawer.text((self.convert_system(self.newSystem[8].crds())), 'Y', "#000000")
         drawer.text((self.convert_system(self.newSystem[9].crds())), 'Z', "#000000")
 
-    def openStartWindow(self):
+    def open_start_window(self):
         self.starter.show()
-        self.hide()
+        self.destroy()
 
     def convert_system(self, point):
         return point[0] - int(0.5 * point[2]) + 350, 350 - (point[1] - int(0.5 * point[2]))

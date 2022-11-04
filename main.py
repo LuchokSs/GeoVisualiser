@@ -15,7 +15,7 @@ class StartingWindow(QMainWindow):
 
         self.mainApp = MainWindow(self)
 
-        self.begButton.clicked.connect(self.open_choosen_file)
+        self.begButton.clicked.connect(self.open_chosen_file)
         self.createEmpty.clicked.connect(self.open_empty_file)
         self.choosePath.clicked.connect(self.choose_file)
 
@@ -23,13 +23,15 @@ class StartingWindow(QMainWindow):
         self.mainApp.show()
         self.hide()
 
-    def open_choosen_file(self):
+    def open_chosen_file(self):
         try:
             with open(self.fileNameInput.text(), 'r') as loadfile:
                 model = json.load(loadfile)
             self.mainApp = MainWindow(self, model)
             self.open_app()
         except FileNotFoundError:
+            return
+        except PermissionError:
             return
 
     def open_empty_file(self):
