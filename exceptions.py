@@ -8,3 +8,7 @@ class InputSyntaxException(Exception):
 
 class DataBaseException(Exception):
     pass
+
+
+class FilesDoNotComplited(Exception):
+    pass

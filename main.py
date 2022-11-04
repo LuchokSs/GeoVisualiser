@@ -1,17 +1,27 @@
 from PyQt5 import uic
 from PyQt5.QtWidgets import QMainWindow, QApplication, QFileDialog
 
+from PIL import Image
+
 import sys
 
 import json_tricks as json
 
 from mainAppClass import MainWindow
 
+from exceptions import FilesDoNotComplited
+
 
 class StartingWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         uic.loadUi('StartingWindow.ui', self)
+        try:
+            self.testerCat = Image.open('./figureImages/satisfied_cat.PNG')
+        except FileNotFoundError:
+            raise FilesDoNotComplited("Check files")
+        except PermissionError:
+            raise FilesDoNotComplited("Check folders")
 
         self.mainApp = MainWindow(self)
 
