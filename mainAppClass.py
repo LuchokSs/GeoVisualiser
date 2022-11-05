@@ -71,6 +71,7 @@ class MainWindow(QMainWindow):
         self.pointTwo.currentTextChanged.connect(self.current_text_changed)
 
     def update_model(self):
+        """Метод для формирования начального рисунка в случае, если был открыт существующий файл."""
         self.connectionsText = {self.pointOne: '',
                                 self.pointTwo: ''}
         for literal in self.model.points.keys():
@@ -83,6 +84,7 @@ class MainWindow(QMainWindow):
                                         self.pointTwo: literal}
 
     def add_point_to_list(self):
+        """Метод добавления точки."""
         if self.pointInput.text() != '':
             literal = self.pointInput.text().split()[0]
             try:
@@ -113,6 +115,7 @@ class MainWindow(QMainWindow):
         self.redraw()
 
     def del_point_from_list(self):
+        """Метод для удаления точки."""
         if self.pointPressed != '':
             dialog = ADDialog()
             if not dialog.exec_():
@@ -140,6 +143,7 @@ class MainWindow(QMainWindow):
         self.redraw()
 
     def add_connected_points(self):
+        """Метод для соединения точек."""
         if self.connectionsText[self.pointOne] != '' and self.connectionsText[self.pointTwo] != '':
             if [min(self.connectionsText[self.pointOne], self.connectionsText[self.pointTwo]),
                 max(self.connectionsText[self.pointOne],
@@ -150,6 +154,7 @@ class MainWindow(QMainWindow):
             self.redraw()
 
     def del_connected_points(self):
+        """Метод для разъединения точек."""
         try:
             try:
                 del self.model.connections[self.model.connections.index(
@@ -162,10 +167,12 @@ class MainWindow(QMainWindow):
         self.redraw()
 
     def load_figure(self):
+        """Метод для загрузки фигуры из окна figureSelection."""
         self.figureSelection = FigureSelectionWindow(self.figuresDataBase, starter=self)
         self.figureSelection.show()
 
     def draw_line(self, p1, p2, line='common', color='#bF311A'):
+        """Метод для рисования линии."""
         drawer = ImageDraw.Draw(self.field)
         point1 = p1.crds()
         point2 = p2.crds()
@@ -191,6 +198,7 @@ class MainWindow(QMainWindow):
         self.connectionsText[self.sender()] = text
 
     def item_pressed(self, item):
+        """Метод для действий при выделении точки."""
         point = self.model.points[item.text().split()[0]]
         self.pointPressed = item
         self.rowPressed = self.pointList.currentRow()
@@ -236,6 +244,7 @@ class MainWindow(QMainWindow):
         self.model.points[item.text().split()[0]].set_color(color)
 
     def change_crd_of_point(self):
+        """Метод для изменения координат точки."""
         if self.pointPressed == '':
             return
         try:
@@ -255,6 +264,7 @@ class MainWindow(QMainWindow):
         self.pointPressed = ''
 
     def rotate(self, point, x, y, z):
+        """Метод для реализации поворота точек вокруг осей фигуры."""
         angleX, angleY, angleZ = (x / 180 * pi), (y / 180 * pi), (z / 180 * pi)
         newPoint = self.multiply([[1, 0, 0],
                                   [0, cos(angleX), sin(angleX)],
@@ -270,6 +280,7 @@ class MainWindow(QMainWindow):
         return newPoint
 
     def redraw(self):
+        """Метод для перерисовки поля."""
         drawer = ImageDraw.Draw(self.field)
         drawer.polygon(((0, 0), (0, 700), (700, 700), (700, 0)), "#FFFFFF")
         self.newPoints = {}
@@ -298,6 +309,7 @@ class MainWindow(QMainWindow):
         set_img(self, self.field)
 
     def draw_system(self):
+        """Вспомогательный метод для рисования системы координат."""
         drawer = ImageDraw.Draw(self.field)
         point2 = (0, 0, 0)
         for point1 in self.newSystem[1:7]:
@@ -310,19 +322,24 @@ class MainWindow(QMainWindow):
         drawer.text((self.convert_system(self.newSystem[9].crds())), 'Z', "#000000")
 
     def open_start_window(self):
+        """Метод для выхода к стартовому окну."""
         self.starter.show()
         self.destroy()
 
     def convert_system(self, point):
+        """Вспомогательный метод преобразования 3-х мерных координат в 2-х мерные."""
         return point[0] - int(0.5 * point[2]) + 350, 350 - (point[1] - int(0.5 * point[2]))
 
     def vector_lenth(self, p1, p2):
+        """Вспомогательный метод для вычисления длины вектора."""
         return (((p2[0] - p1[0]) ** 2) + ((p2[1] - p1[1]) ** 2) + ((p2[2] - p1[2]) ** 2)) ** 0.5
 
     def vector(self, p1, p2):
+        """Вспомогательный метод для вычисления вектора между двумя точками."""
         return [int(p2[0]) - int(p1[0]), int(p2[1]) - int(p1[1]), int(p2[2]) - int(p1[2])]
 
     def multiply(self, a, b):
+        """Вспомогательный метод для умножения матриц."""
         a = array(a)
         b = array(b)
         res = mult(a, b)
@@ -340,6 +357,7 @@ class MainWindow(QMainWindow):
         return resList
 
     def save(self):
+        """Метод для сохранения файла рисунка."""
         path = QFileDialog.getSaveFileName(self, 'Сохранить как...', '', 'График (*.json);; Картинка (*.png)')
         try:
             if path[1] == "График (*.json)":
@@ -352,6 +370,7 @@ class MainWindow(QMainWindow):
             print(er)
 
     def save_figure(self):
+        """Метод для сохранения файла фигуры."""
         name, ok_pressed = QInputDialog.getText(self, "Введите название файла", "ВВедите название файла...")
         if not ok_pressed:
             return

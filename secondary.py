@@ -7,6 +7,7 @@ from PIL import Image
 
 
 def set_img(self, img):
+    """Универсальный метод для установки картинки в Label с именем picOutput."""
     if str(type(img)) == "<class 'str'>":
         img = Image.open(img)
         img = img.resize((250, 250))
@@ -15,34 +16,35 @@ def set_img(self, img):
     self.picOutput.setPixmap(self.pixmap)
 
 
-class Plane:
-    def __init__(self, point1, point2, point3):
-        self.corners = [point1, point2, point3]
-
-
 class Point:
+    """Вспомогательный класс для хранения информации о точке."""
     def __init__(self, coordinates, name='SYS', color="#bF311A"):
         self.coordinates = list(map(int, coordinates))
         self.color = color
         self.name = name
 
     def __getitem__(self, key):
+        """Метод для получения конкретной координаты точки."""
         return self.coordinates[key]
 
     def crds(self):
+        """Метод для получения координат точки в виде списка."""
         return self.coordinates
 
     def set_color(self, color):
+        """Метод для изменения цвета точки."""
         self.color = color
 
 
 class Model:
+    """Модель, хранящая в себе всю информацию о рисунке."""
     def __init__(self):
         self.points = {}
         self.connections = []
 
 
 class MovingDialog(QDialog):
+    """Класс диалога передвижения добавляемой фигуры."""
     def __init__(self, *args):
         super().__init__()
         uic.loadUi('movingDialog.ui', self)
@@ -73,6 +75,7 @@ class ADDialog(QDialog):
 
 
 class FigureView(QWidget):
+    """Виджет, соединяющий рисунок точки и кнопку добавления."""
     def __init__(self, *args):
         super().__init__(args[0])
         uic.loadUi('FigureViewWidget.ui', self)

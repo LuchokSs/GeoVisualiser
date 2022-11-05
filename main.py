@@ -30,10 +30,12 @@ class StartingWindow(QMainWindow):
         self.choosePath.clicked.connect(self.choose_file)
 
     def open_app(self):
+        '''Универсальный метод для открытия приложения.'''
         self.mainApp.show()
         self.hide()
 
     def open_chosen_file(self):
+        """Метод для открытия файла с указанным путем."""
         try:
             with open(self.fileNameInput.text(), 'r') as loadfile:
                 model = json.load(loadfile)
@@ -45,10 +47,12 @@ class StartingWindow(QMainWindow):
             return
 
     def open_empty_file(self):
+        """Метод для открытия пустого файла."""
         self.mainApp = MainWindow(self)
         self.open_app()
 
     def choose_file(self):
+        """Метод для выбора пути к файлу"""
         self.path = QFileDialog.getOpenFileName(self, "Open file", '', 'Рисунок (*.json);; Все файлы (*)')[0]
         self.fileNameInput.setText(self.path)
 

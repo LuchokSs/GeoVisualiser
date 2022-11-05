@@ -26,12 +26,14 @@ class FigureSelectionWindow(QMainWindow):
         self.show_figures()
 
     def show_figures(self):
+        """Метод для демонстрации списка фигур."""
         for figure in self.figureNames:
             path = self.db.execute(f"""SELECT figureImagePath FROM figure
                                            WHERE figureName='{figure}'""").fetchall()[0][0]
             self.figuresLayout.addWidget(FigureView(self, path, figure))
 
     def update_model(self):
+        """Метод добавления выбранной фигуры к текущему рисунку."""
         senderBtn = self.sender()
         dialog = MovingDialog(self)
         result = dialog.exec_()
