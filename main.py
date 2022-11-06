@@ -11,6 +11,8 @@ from mainAppClass import MainWindow
 
 from exceptions import FilesDoNotComplited
 
+from secondary import Model
+
 
 class StartingWindow(QMainWindow):
     def __init__(self):
@@ -48,7 +50,7 @@ class StartingWindow(QMainWindow):
 
     def open_empty_file(self):
         """Метод для открытия пустого файла."""
-        self.mainApp = MainWindow(self)
+        self.mainApp = MainWindow(self, model=Model())
         self.open_app()
 
     def choose_file(self):
