@@ -125,7 +125,6 @@ class MainWindow(QMainWindow):
                 self.model.points.pop(self.pointPressed.text().split()[0])
                 self.pointOne.clear()
                 self.pointTwo.clear()
-                self.changeX
                 try:
                     i = 0
                     while i < len(self.model.connections):
