@@ -17,7 +17,7 @@ class StartingWindow(QMainWindow):
         super().__init__()
         uic.loadUi('StartingWindow.ui', self)
         try:
-            self.testerCat = Image.open('./figureImages/satisfied_cat.PNG')
+            self.testerCat = Image.open('./data/satisfied_cat.PNG')
         except FileNotFoundError:
             raise FilesDoNotComplited("Check files")
         except PermissionError:

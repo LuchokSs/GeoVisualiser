@@ -374,7 +374,7 @@ class MainWindow(QMainWindow):
         name, ok_pressed = QInputDialog.getText(self, "Введите название файла", "ВВедите название файла...")
         if not ok_pressed:
             return
-        path = './figureImages/' + name + '.png'
+        path = './data/' + name + '.png'
         try:
             self.field.save(path)
         except ValueError:
