@@ -125,6 +125,7 @@ class MainWindow(QMainWindow):
                 self.model.points.pop(self.pointPressed.text().split()[0])
                 self.pointOne.clear()
                 self.pointTwo.clear()
+                self.changeX
                 try:
                     i = 0
                     while i < len(self.model.connections):
@@ -139,7 +140,9 @@ class MainWindow(QMainWindow):
                     self.pointTwo.addItem(i[0])
             except KeyError:
                 pass
-
+            self.changeX.setValue(0)
+            self.changeY.setValue(0)
+            self.changeZ.setValue(0)
         self.redraw()
 
     def add_connected_points(self):
@@ -248,20 +251,23 @@ class MainWindow(QMainWindow):
         if self.pointPressed == '':
             return
         try:
-            point = self.model.points[self.pointPressed.text().split()[0]]
-        except Exception:
-            raise PointExistingException
-        point.coordinates = [self.changeX.value(), self.changeY.value(), self.changeZ.value()]
-        crds = point.crds()
-        self.pointList.takeItem(self.rowPressed)
-        self.pointList.addItem(self.pointPressed.text().split()[0] + f' {crds[0]},{crds[1]},{crds[2]}')
-        self.pointList.sortItems()
-        self.changeX.setValue(0)
-        self.changeY.setValue(0)
-        self.changeZ.setValue(0)
-        self.redraw()
+            if self.pointPressed.text().split()[0] in self.model.points.keys():
+                point = self.model.points[self.pointPressed.text().split()[0]]
+            else:
+                raise PointExistingException
+            point.coordinates = [self.changeX.value(), self.changeY.value(), self.changeZ.value()]
+            crds = point.crds()
+            self.pointList.takeItem(self.rowPressed)
+            self.pointList.addItem(self.pointPressed.text().split()[0] + f' {crds[0]},{crds[1]},{crds[2]}')
+            self.pointList.sortItems()
+            self.changeX.setValue(0)
+            self.changeY.setValue(0)
+            self.changeZ.setValue(0)
+            self.redraw()
 
-        self.pointPressed = ''
+            self.pointPressed = ''
+        except PointExistingException:
+            return
 
     def rotate(self, point, x, y, z):
         """Метод для реализации поворота точек вокруг осей фигуры."""
