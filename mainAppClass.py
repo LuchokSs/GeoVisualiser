@@ -94,15 +94,21 @@ class MainWindow(QMainWindow):
                     raise InputSyntaxException
                 if len(self.pointInput.text().split()[1].split(',')) != 3:
                     raise InputSyntaxException
-                if self.pointInput.text().split()[0] not in self.model.points.keys():
-                    self.model.points[literal] = self.pointInput.text().split()[1]
                 else:
-                    self.model.points[literal + f'{list(self.model.points.keys()).count(literal)}'] \
-                        = self.pointInput.text().split()[1]
+                    self.model.points[literal] = self.pointInput.text().split()[1]
             except InputSyntaxException:
                 self.pointInput.setText('ОШИБКА ВВОДА')
                 return
             literal = list(self.model.points.keys())[-1]
+            cnt = 0
+            for i in self.model.points.keys():
+                if literal in i:
+                    cnt += 1
+
+            nliteral = literal + str(cnt)
+            self.model.points[nliteral] = self.model.points[literal]
+            del self.model.points[literal]
+            literal = nliteral
 
             self.pointList.addItem(literal + ' ' + (self.model.points[literal]))
             self.pointList.sortItems()
@@ -114,7 +120,8 @@ class MainWindow(QMainWindow):
 
             self.pointInput.setText('')
 
-        self.redraw()
+            self.redraw()
+            return literal
 
     def del_point_from_list(self):
         """Метод для удаления точки."""
@@ -230,27 +237,28 @@ class MainWindow(QMainWindow):
                                        self.zRotate.value(),
                                        self.yRotate.value()), line='splited', color='#50AAAA')
 
-        if point[0] and point[1] and point[2]:
-            func(point[0], point[1], point[2], point[0], point[1], 0)
-            func(point[0], point[1], 0, point[0], 0, 0)
-            func(point[0], point[1], 0, 0, point[1], 0)
+        if not self.freezeSystem.isChecked():
+            if point[0] and point[1] and point[2]:
+                func(point[0], point[1], point[2], point[0], point[1], 0)
+                func(point[0], point[1], 0, point[0], 0, 0)
+                func(point[0], point[1], 0, 0, point[1], 0)
 
-            func(point[0], point[1], point[2], point[0], 0, point[2])
-            func(point[0], 0, point[2], point[0], 0, 0)
-            func(point[0], 0, point[2], 0, 0, point[2])
+                func(point[0], point[1], point[2], point[0], 0, point[2])
+                func(point[0], 0, point[2], point[0], 0, 0)
+                func(point[0], 0, point[2], 0, 0, point[2])
 
-            func(point[0], point[1], point[2], 0, point[1], point[2])
-            func(0, point[1], point[2], 0, 0, point[2])
-            func(0, point[1], point[2], 0, point[1], 0)
-        elif point[0] and point[1] and not point[2]:
-            func(point[0], point[1], 0, point[0], 0, 0)
-            func(point[0], point[1], 0, 0, point[1], 0)
-        elif point[0] and not point[1] and point[2]:
-            func(point[0], point[1], point[2], 0, 0, point[2])
-            func(point[0], point[1], point[2], point[0], 0, 0)
-        elif not point[0] and point[1] and point[2]:
-            func(point[0], point[1], point[2], 0, 0, point[2])
-            func(point[0], point[1], point[2], 0, point[1], 0)
+                func(point[0], point[1], point[2], 0, point[1], point[2])
+                func(0, point[1], point[2], 0, 0, point[2])
+                func(0, point[1], point[2], 0, point[1], 0)
+            elif point[0] and point[1] and not point[2]:
+                func(point[0], point[1], 0, point[0], 0, 0)
+                func(point[0], point[1], 0, 0, point[1], 0)
+            elif point[0] and not point[1] and point[2]:
+                func(point[0], point[1], point[2], 0, 0, point[2])
+                func(point[0], point[1], point[2], point[0], 0, 0)
+            elif not point[0] and point[1] and point[2]:
+                func(point[0], point[1], point[2], 0, 0, point[2])
+                func(point[0], point[1], point[2], 0, point[1], 0)
         self.model.points[item.text().split()[0]].set_color(color)
 
     def change_crd_of_point(self):
@@ -310,9 +318,8 @@ class MainWindow(QMainWindow):
             raise PointExistingException
         for point in self.systemPoints:
             self.newSystem.append(self.rotate(point, self.xRotate.value(), self.zRotate.value(), self.yRotate.value()))
-        if self.freezeSystem.isChecked():
-            self.newSystem = self.systemPoints
-        self.draw_system()
+        if not self.freezeSystem.isChecked():
+            self.draw_system()
         for points in self.model.connections:
             self.draw_line(self.newPoints[points[0]], self.newPoints[points[1]])
         for point in self.newPoints.keys():

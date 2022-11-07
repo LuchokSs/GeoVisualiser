@@ -49,13 +49,13 @@ class FigureSelectionWindow(QMainWindow):
                                         WHERE figureID=(
                                             SELECT figureID FROM figure
                                                 WHERE figureName=('{senderBtn.figureName}'))""").fetchall()
+        stv = {}
         for i in range(len(loaded)):
-            updatedModel.points[loaded[i][0]] = Point([loaded[i][1] + results[0],
-                                                       loaded[i][2] + results[1],
-                                                       loaded[i][3] + results[1]])
-            self.starter.model.points[loaded[i][0]] = Point([loaded[i][1] + results[0],
-                                                             loaded[i][2] + results[1],
-                                                             loaded[i][3] + results[1]])
+            self.starter.pointInput.setText(loaded[i][0] + ' '
+                                            + ','.join([str(loaded[i][1] + results[0]),
+                                                        str(loaded[i][2] + results[1]),
+                                                        str(loaded[i][3] + results[1])]))
+            stv[loaded[i][0]] = self.starter.add_point_to_list()
         pnts = self.db.execute(f"""SELECT pointOneID, pointTwoID FROM connections 
                                                 WHERE figureID=(
                                                     SELECT figureID FROM figure
@@ -63,18 +63,7 @@ class FigureSelectionWindow(QMainWindow):
         for i in range(len(pnts)):
             loaded = self.db.execute(f"""SELECT pointName FROM points
                                             WHERE pointID in ({pnts[i][0]}, {pnts[i][1]})""").fetchall()
-            updatedModel.connections.append([loaded[0][0], loaded[1][0]])
-            self.starter.model.connections.append([loaded[0][0], loaded[1][0]])
-        self.starter.connectionsText = {self.starter.pointOne: '',
-                                        self.starter.pointTwo: ''}
-        for literal in updatedModel.points.keys():
-            self.starter.pointList.addItem(literal +
-                                           ' ' + ','.join(list(map(str, updatedModel.points[literal].coordinates))))
-            self.starter.pointList.sortItems()
-            self.starter.pointOne.addItem(literal)
-            self.starter.pointTwo.addItem(literal)
-            if self.starter.connectionsText[self.starter.pointOne] == '':
-                self.starter.connectionsText = {self.starter.pointOne: literal,
-                                                self.starter.pointTwo: literal}
+            updatedModel.connections.append([stv[loaded[0][0]], stv[loaded[1][0]]])
+            self.starter.model.connections.append([stv[loaded[0][0]], stv[loaded[1][0]]])
         self.starter.redraw()
         self.destroy()

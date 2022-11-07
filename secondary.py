@@ -8,6 +8,7 @@ from PIL import Image
 
 def set_img(self, img):
     """Универсальный метод для установки картинки в Label с именем picOutput."""
+
     if str(type(img)) == "<class 'str'>":
         img = Image.open(img)
         img = img.resize((250, 250))
@@ -19,14 +20,18 @@ def set_img(self, img):
 class Point:
     """Вспомогательный класс для хранения информации о точке."""
 
-    def __init__(self, coordinates, name='SYS', color="#bF311A"):
+    def __init__(self, coordinates, name='SYS', color="#bF311A", pindex=0):
         self.coordinates = list(map(int, coordinates))
         self.color = color
         self.name = name
+        self.index = pindex
 
     def __getitem__(self, key):
         """Метод для получения конкретной координаты точки."""
         return self.coordinates[key]
+
+    def __str__(self):
+        return ','.join([str(self.coordinates[0]), str(self.coordinates[1]), str(self.coordinates[2])])
 
     def crds(self):
         """Метод для получения координат точки в виде списка."""
