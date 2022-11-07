@@ -18,6 +18,7 @@ def set_img(self, img):
 
 class Point:
     """Вспомогательный класс для хранения информации о точке."""
+
     def __init__(self, coordinates, name='SYS', color="#bF311A"):
         self.coordinates = list(map(int, coordinates))
         self.color = color
@@ -38,6 +39,7 @@ class Point:
 
 class Model:
     """Модель, хранящая в себе всю информацию о рисунке."""
+
     def __init__(self):
         self.points = {}
         self.connections = []
@@ -45,6 +47,7 @@ class Model:
 
 class MovingDialog(QDialog):
     """Класс диалога передвижения добавляемой фигуры."""
+
     def __init__(self, *args):
         super().__init__()
         uic.loadUi('movingDialog.ui', self)
@@ -76,6 +79,7 @@ class ADDialog(QDialog):
 
 class FigureView(QWidget):
     """Виджет, соединяющий рисунок точки и кнопку добавления."""
+
     def __init__(self, *args):
         super().__init__(args[0])
         uic.loadUi('FigureViewWidget.ui', self)
