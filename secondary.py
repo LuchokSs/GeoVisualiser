@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QLabel, QDialog, QPushButton
 from PyQt5 import uic
 
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap  # Скопируй 3 строки для set_img()
 from PIL.ImageQt import ImageQt
 from PIL import Image
 
@@ -12,9 +12,9 @@ def set_img(self, img):
     if str(type(img)) == "<class 'str'>":
         img = Image.open(img)
         img = img.resize((250, 250))
-    self.pic = ImageQt(img)
-    self.pixmap = QPixmap.fromImage(self.pic)
-    self.picOutput.setPixmap(self.pixmap)
+    pic = ImageQt(img)
+    pixmap = QPixmap.fromImage(pic)
+    self.picOutput.setPixmap(pixmap)
 
 
 class Point:
