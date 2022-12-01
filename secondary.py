@@ -12,9 +12,9 @@ def set_img(self, img):
     if str(type(img)) == "<class 'str'>":
         img = Image.open(img)
         img = img.resize((250, 250))
-    pic = ImageQt(img)
-    pixmap = QPixmap.fromImage(pic)
-    self.picOutput.setPixmap(pixmap)
+    self.pic = ImageQt(img)
+    self.pixmap = QPixmap.fromImage(self.pic)
+    self.picOutput.setPixmap(self.pixmap)
 
 
 class Point:
